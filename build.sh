@@ -5,7 +5,7 @@ PLATFORM="$1"
 BUILD_TYPE="${2:-release}"
 
 usage() {
-    echo "Usage: ./build.sh <android-apk|android-bundle|windows|linux|macos|ios|web> [debug|profile|release]"
+    echo "Usage: ./build.sh <android-apk|android-bundle|windows|linux|macos|ios> [debug|profile|release]"
     exit 1
 }
 
@@ -43,11 +43,6 @@ case "$PLATFORM" in
         echo "Building iOS ($BUILD_TYPE)..."
         flutter build ios "--$BUILD_TYPE" --no-codesign
         echo "Artifact: build/ios/iphoneos/Runner.app"
-        ;;
-    web)
-        echo "Building Web ($BUILD_TYPE)..."
-        flutter build web "--$BUILD_TYPE"
-        echo "Artifact: build/web/"
         ;;
     *)
         echo "Unsupported platform: $PLATFORM"

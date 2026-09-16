@@ -151,11 +151,24 @@ class HomeScreenController extends GetxController {
       }
 
       if (quickPicks.value.songList.isEmpty) {
-        final index = homeContentListMap
+        // The home feed doesn't always carry a section titled exactly
+        // "Quick picks", so indexWhere returns -1 and removeAt(-1) throws,
+        // aborting the whole load. Fall back to the first song section - what
+        // changeDiscoverContent() already treats as quick picks - and skip the
+        // block entirely when there is none. Sections can hold Album/Playlist
+        // entries, so match on MediaItem rather than blindly taking index 0.
+        var index = homeContentListMap
             .indexWhere((element) => element['title'] == "Quick picks");
-        final con = homeContentListMap.removeAt(index);
-        quickPicks.value = QuickPicks(List<MediaItem>.from(con["contents"]),
-            title: "Quick picks");
+        if (index == -1) {
+          index = homeContentListMap.indexWhere((element) =>
+              (element["contents"] as List).isNotEmpty &&
+              element["contents"][0] is MediaItem);
+        }
+        if (index != -1) {
+          final con = homeContentListMap.removeAt(index);
+          quickPicks.value = QuickPicks(List<MediaItem>.from(con["contents"]),
+              title: con["title"] ?? "Quick picks");
+        }
       }
 
       middleContent.value = _setContentList(middleContentTemp);

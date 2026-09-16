@@ -7,7 +7,7 @@ usage() {
     echo "Usage: ./run.sh [device-id|all]"
     echo ""
     echo "  No args    - auto-detects single device, or prompts if multiple"
-    echo "  device-id  - target specific device (e.g. linux, chrome, emulator-5554)"
+    echo "  device-id  - target specific device (e.g. linux, emulator-5554)"
     echo "  all        - build and run on each device one by one, each in its own terminal"
     echo ""
     echo "List devices:  flutter devices"

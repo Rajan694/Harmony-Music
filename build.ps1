@@ -1,6 +1,6 @@
 param (
     [Parameter(Mandatory=$true)]
-    [ValidateSet("android-apk", "android-bundle", "windows", "linux", "macos", "ios", "web")]
+    [ValidateSet("android-apk", "android-bundle", "windows", "linux", "macos", "ios")]
     [string]$Platform,
 
     [ValidateSet("debug", "profile", "release")]
@@ -39,10 +39,5 @@ switch ($Platform) {
         Write-Host "Building iOS ($BuildType)..."
         flutter build ios --$BuildType --no-codesign
         Write-Host "Artifact: build/ios/iphoneos/Runner.app"
-    }
-    "web" {
-        Write-Host "Building Web ($BuildType)..."
-        flutter build web --$BuildType
-        Write-Host "Artifact: build/web/"
     }
 }
