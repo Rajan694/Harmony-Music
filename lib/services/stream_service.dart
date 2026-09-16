@@ -23,8 +23,11 @@ class StreamProvider {
                   audioCodec:
                       e.audioCodec.contains('mp') ? Codec.mp4a : Codec.opus,
                   bitrate: e.bitrate.bitsPerSecond,
-                  duration: e.duration ?? 0,
-                  loudnessDb: e.loudnessDb,
+                  // Upstream youtube_explode_dart exposes neither per-stream
+                  // duration nor loudness (both were additions in the fork we
+                  // used to pin). 0 is this file's existing "unknown" sentinel.
+                  duration: 0,
+                  loudnessDb: 0,
                   url: e.url.toString(),
                   size: e.size.totalBytes))
               .toList());
@@ -35,9 +38,11 @@ class StreamProvider {
           statusMSG: "networkError",
         );
       } else if (e is VideoUnplayableException) {
+        // The upstream exception carries the reason inside `message`; there is
+        // no separate `reason` getter.
         return StreamProvider(
           playable: false,
-          statusMSG: e.reason ?? "Song is unplayable",
+          statusMSG: e.message,
         );
       } else if (e is VideoRequiresPurchaseException) {
         return StreamProvider(

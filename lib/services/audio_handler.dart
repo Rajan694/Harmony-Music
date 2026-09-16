@@ -8,6 +8,8 @@ import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
 import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart';
+
+import 'chunked_audio_source.dart';
 import 'package:just_audio_media_kit/just_audio_media_kit.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:audio_service/audio_service.dart';
@@ -290,10 +292,18 @@ class MyAudioHandler extends BaseAudioHandler with GetxServiceMixin {
       );
     }
 
-    printINFO("Playing Using AudioSource.uri");
     isPlayingUsingLockCachingSource = false;
+    final uri = Uri.tryParse(url)!;
+    if (uri.scheme == 'https' || uri.scheme == 'http') {
+      // YouTube's CDN 403s the open-ended range requests ExoPlayer and ffmpeg
+      // send, so remote audio has to be pulled in bounded chunks instead.
+      printINFO("Playing Using ChunkedHttpAudioSource");
+      return ChunkedHttpAudioSource(uri, tag: mediaItem);
+    }
+
+    printINFO("Playing Using AudioSource.uri");
     return AudioSource.uri(
-      Uri.tryParse(url)!,
+      uri,
       tag: mediaItem,
     );
   }
@@ -699,6 +709,16 @@ class MyAudioHandler extends BaseAudioHandler with GetxServiceMixin {
   }
 
   void _normalizeVolume(double currentLoudnessDb) {
+    // 0 is the "loudness unknown" sentinel used for cached/downloaded songs,
+    // and is now also what the stream service reports since upstream
+    // youtube_explode_dart does not expose loudness. Normalizing against it
+    // would compute 10^(-5/20) and quietly drop playback to ~56% volume, so
+    // leave the track at full volume instead.
+    if (currentLoudnessDb == 0) {
+      _player.setVolume(1.0);
+      return;
+    }
+
     double loudnessDifference = -5 - currentLoudnessDb;
 
     // Converted loudness difference to a volume multiplier
