@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -e
 
+# Linux desktop deps live in a user-local sysroot on machines without root
+# access. Source it when present: ~/.bashrc is not read by IDE terminals,
+# desktop launchers or non-interactive shells, so relying on it is not enough.
+if [ -f "$HOME/.local/flutter-sysroot/env.sh" ]; then
+    . "$HOME/.local/flutter-sysroot/env.sh"
+fi
+
 DEVICE="$1"
 
 usage() {
